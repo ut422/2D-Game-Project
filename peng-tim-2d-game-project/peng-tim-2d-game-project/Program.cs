@@ -1,10 +1,25 @@
-﻿namespace peng_tim_2d_game_project
+﻿using Raylib_cs;
+using System.Numerics;
+
+public class Program
 {
-    internal class Program
+    const string title = "Basic Raylib Demo";
+    const int width = 800;
+    const int height = 600;
+
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        Raylib.InitWindow(width, height, title);
+        Raylib.SetTargetFPS(60);
+
+        while (!Raylib.WindowShouldClose())
         {
-            Console.WriteLine("Hello, World!");
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Color.RayWhite);
+            Vector2 position = Raylib.GetMousePosition();
+            Raylib.DrawCircleV(position, 50, Color.Black);
+            Raylib.EndDrawing();
         }
+        Raylib.CloseWindow();
     }
 }
