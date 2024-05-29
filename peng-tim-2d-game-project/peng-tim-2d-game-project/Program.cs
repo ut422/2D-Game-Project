@@ -1,25 +1,28 @@
-﻿using Raylib_cs;
-using System.Numerics;
+﻿using System;
+using Raylib_cs;
 
-public class Program
+class Program
 {
-    const string title = "Basic Raylib Demo";
-    const int width = 800;
-    const int height = 600;
+    // screen dimensions
+    const int screenWidth = 800;
+    const int screenHeight = 600;
 
-    static void Main(string[] args)
-    {
-        Raylib.InitWindow(width, height, title);
-        Raylib.SetTargetFPS(60);
+    // player/enemy settings
+    static Rectangle player = new Rectangle(50, 50, 50, 50);
+    static Rectangle enemy = new Rectangle(300, 300, 50, 50);
+    static Rectangle goal = new Rectangle(700, 500, 50, 50);
+    static int playerSpeed = 5;
+    static int enemySpeed = 9;
 
-        while (!Raylib.WindowShouldClose())
-        {
-            Raylib.BeginDrawing();
-            Raylib.ClearBackground(Color.RayWhite);
-            Vector2 position = Raylib.GetMousePosition();
-            Raylib.DrawCircleV(position, 50, Color.Black);
-            Raylib.EndDrawing();
-        }
-        Raylib.CloseWindow();
-    }
-}
+    // original positions
+    static Rectangle originalPlayer = player;
+    static Rectangle originalEnemy = enemy;
+    static Rectangle originalGoal = goal;
+
+    // game state
+    static bool gameLost = false;
+    static bool spacePressed = false;
+
+    static Random random = new Random();
+
+ 
