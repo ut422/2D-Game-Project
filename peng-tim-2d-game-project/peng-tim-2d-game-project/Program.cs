@@ -156,7 +156,7 @@ class Player : GameObject
 
     public Player(float x, float y, float width, float height, int speed) : base(x, y, width, height)
     {
-        this.speed = speed;
+        speed = speed;
     }
 
     public void Update()
