@@ -23,7 +23,7 @@ class Program
     static void Main(string[] args)
     {
         // initialization
-        Raylib.InitWindow(screenWidth, screenHeight, "Simple 2D Game");
+        Raylib.InitWindow(screenWidth, screenHeight, "2d bloc game");
         Raylib.SetTargetFPS(60);
 
         ResetGame();
