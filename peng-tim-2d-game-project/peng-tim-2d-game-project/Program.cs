@@ -207,7 +207,7 @@ class Enemy : GameObject
         Rect.X += speedX;
         Rect.Y += speedY;
 
-        // Reverse direction if enemy reaches screen boundaries
+        // reverse direction if enemy reaches screen boundaries
         if (Rect.X > screenWidth - Rect.Width || Rect.X < 0)
         {
             speedX = -speedX;
@@ -253,7 +253,7 @@ class Goal : GameObject
         Rect.Width = random.Next(20, 100);
         Rect.Height = random.Next(20, 100);
 
-        // Randomly choose between square and circle
+        // randomly choose between square and circle
         isCircle = random.Next(2) == 0;
     }
 
