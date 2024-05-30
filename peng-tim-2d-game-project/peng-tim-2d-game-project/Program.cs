@@ -17,13 +17,13 @@ class Program
     static Random random = new Random();
 
     static Player player = new Player(50, 50, 50, 50, 5);
-    static Enemy enemy = new Enemy(300, 300, 50, 50, 9);
+    static Enemy enemy = new Enemy(300, 300, 50, 50, 9, 9);
     static Goal goal = new Goal(700, 500, 50, 50);
 
     static void Main(string[] args)
     {
         // initialization
-        Raylib.InitWindow(screenWidth, screenHeight, "2d bloc game");
+        Raylib.InitWindow(screenWidth, screenHeight, "2D Block Game");
         Raylib.SetTargetFPS(60);
 
         ResetGame();
@@ -67,7 +67,7 @@ class Program
             player.EnsureInBounds(screenWidth, screenHeight);
 
             // update enemy
-            enemy.Update(screenWidth);
+            enemy.Update(screenWidth, screenHeight);
 
             // check collisions
             if (player.CheckCollision(enemy))
@@ -189,28 +189,40 @@ class Player : GameObject
 // class for the enemy
 class Enemy : GameObject
 {
-    private int speed;
-    private int originalSpeed;
+    private int speedX;
+    private int speedY;
+    private int originalSpeedX;
+    private int originalSpeedY;
 
-    public Enemy(float x, float y, float width, float height, int speed) : base(x, y, width, height)
+    public Enemy(float x, float y, float width, float height, int speedX, int speedY) : base(x, y, width, height)
     {
-        this.speed = speed;
-        this.originalSpeed = speed;
+        this.speedX = speedX;
+        this.speedY = speedY;
+        this.originalSpeedX = speedX;
+        this.originalSpeedY = speedY;
     }
 
-    public void Update(int screenWidth)
+    public void Update(int screenWidth, int screenHeight)
     {
-        Rect.X += speed;
+        Rect.X += speedX;
+        Rect.Y += speedY;
+
+        // Reverse direction if enemy reaches screen boundaries
         if (Rect.X > screenWidth - Rect.Width || Rect.X < 0)
         {
-            speed = -speed;
+            speedX = -speedX;
+        }
+        if (Rect.Y > screenHeight - Rect.Height || Rect.Y < 0)
+        {
+            speedY = -speedY;
         }
     }
 
     public new void Reset()
     {
         base.Reset();
-        speed = originalSpeed;
+        speedX = originalSpeedX;
+        speedY = originalSpeedY;
     }
 
     public void Draw()
@@ -257,3 +269,4 @@ class Goal : GameObject
         }
     }
 }
+
