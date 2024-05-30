@@ -55,7 +55,7 @@ class Program
             }
             if (player.CheckCollision(goal))
             {
-                // move goal to a new random position and change size, ensuring it spawns far away from the player
+                // move goal to a new random position and change shape, ensuring it spawns far away from the player
                 goal.Respawn(player, screenWidth, screenHeight);
             }
         }
@@ -84,7 +84,7 @@ class Program
         // you died
         if (gameLost)
         {
-            Raylib.DrawText("you the died! press SPACE to continue.", screenWidth / 2 - 150, screenHeight / 2, 20, Color.Red);
+            Raylib.DrawText("you died! press SPACE to continue.", screenWidth / 2 - 150, screenHeight / 2, 20, Color.Red);
         }
         else
         {
@@ -189,9 +189,11 @@ class Enemy : GameObject
 class Goal : GameObject
 {
     static Random random = new Random();
+    private bool isCircle;
 
     public Goal(float x, float y, float width, float height) : base(x, y, width, height)
     {
+        isCircle = false; // initially a rectangle
     }
 
     public void Respawn(Player player, int screenWidth, int screenHeight)
@@ -204,10 +206,20 @@ class Goal : GameObject
 
         Rect.Width = random.Next(20, 100);
         Rect.Height = random.Next(20, 100);
+
+        // Randomly choose between square and circle
+        isCircle = random.Next(2) == 0;
     }
 
     public void Draw()
     {
-        Raylib.DrawRectangleRec(Rect, Color.Gold);
+        if (isCircle)
+        {
+            Raylib.DrawCircle((int)(Rect.X + Rect.Width / 2), (int)(Rect.Y + Rect.Height / 2), Rect.Width / 2, Color.Gold);
+        }
+        else
+        {
+            Raylib.DrawRectangleRec(Rect, Color.Gold);
+        }
     }
 }
