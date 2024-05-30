@@ -7,23 +7,13 @@ class Program
     const int screenWidth = 800;
     const int screenHeight = 600;
 
-    // player/enemy settings
-    static Rectangle player = new Rectangle(50, 50, 50, 50);
-    static Rectangle enemy = new Rectangle(300, 300, 50, 50);
-    static Rectangle goal = new Rectangle(700, 500, 50, 50);
-    static int playerSpeed = 5;
-    static int enemySpeed = 9;
-
-    // original positions
-    static Rectangle originalPlayer = player;
-    static Rectangle originalEnemy = enemy;
-    static Rectangle originalGoal = goal;
-
     // game state
     static bool gameLost = false;
     static bool spacePressed = false;
 
-    static Random random = new Random();
+    static Player player = new Player(50, 50, 50, 50, 5);
+    static Enemy enemy = new Enemy(300, 300, 50, 50, 9);
+    static Goal goal = new Goal(700, 500, 50, 50);
 
     static void Main(string[] args)
     {
@@ -49,41 +39,24 @@ class Program
     {
         if (!gameLost)
         {
-            // player movement
-            if (Raylib.IsKeyDown(KeyboardKey.Right)) player.X += playerSpeed;
-            if (Raylib.IsKeyDown(KeyboardKey.Left)) player.X -= playerSpeed;
-            if (Raylib.IsKeyDown(KeyboardKey.Up)) player.Y -= playerSpeed;
-            if (Raylib.IsKeyDown(KeyboardKey.Down)) player.Y += playerSpeed;
+            // update player
+            player.Update();
 
             // ensure player stays within the screen bounds
-            if (player.X < 0) player.X = 0;
-            if (player.X > screenWidth - player.Width) player.X = screenWidth - player.Width;
-            if (player.Y < 0) player.Y = 0;
-            if (player.Y > screenHeight - player.Height) player.Y = screenHeight - player.Height;
+            player.EnsureInBounds(screenWidth, screenHeight);
 
-            // enemy movement (simple horizontal oscillation)
-            enemy.X += enemySpeed;
-            if (enemy.X > screenWidth - enemy.Width || enemy.X < 0)
-            {
-                enemySpeed = -enemySpeed;
-            }
+            // update enemy
+            enemy.Update(screenWidth);
 
             // check collisions
-            if (Raylib.CheckCollisionRecs(player, enemy))
+            if (player.CheckCollision(enemy))
             {
                 gameLost = true;
             }
-            if (Raylib.CheckCollisionRecs(player, goal))
+            if (player.CheckCollision(goal))
             {
                 // move goal to a new random position and change size, ensuring it spawns far away from the player
-                do
-                {
-                    goal.X = random.Next(0, screenWidth - (int)goal.Width);
-                    goal.Y = random.Next(0, screenHeight - (int)goal.Height);
-                } while (Math.Abs(goal.X - player.X) < 200 && Math.Abs(goal.Y - player.Y) < 200);
-
-                goal.Width = random.Next(20, 100);
-                goal.Height = random.Next(20, 100);
+                goal.Respawn(player, screenWidth, screenHeight);
             }
         }
         else
@@ -96,9 +69,9 @@ class Program
                 spacePressed = true;
 
                 // reset player, enemy, and goal positions
-                player = originalPlayer;
-                enemy = originalEnemy;
-                goal = originalGoal;
+                player.Reset();
+                enemy.Reset();
+                goal.Reset();
             }
         }
     }
@@ -115,11 +88,126 @@ class Program
         }
         else
         {
-            Raylib.DrawRectangleRec(player, Color.Blue);
-            Raylib.DrawRectangleRec(enemy, Color.Red);
-            Raylib.DrawRectangleRec(goal, Color.Gold);
+            player.Draw();
+            enemy.Draw();
+            goal.Draw();
         }
 
         Raylib.EndDrawing();
+    }
+}
+
+// base class for game objects
+class GameObject
+{
+    public Rectangle Rect;
+    protected Rectangle originalRect;
+
+    public GameObject(float x, float y, float width, float height)
+    {
+        Rect = new Rectangle(x, y, width, height);
+        originalRect = Rect;
+    }
+
+    public void Reset()
+    {
+        Rect = originalRect;
+    }
+}
+
+// class for the player
+class Player : GameObject
+{
+    private int speed;
+
+    public Player(float x, float y, float width, float height, int speed) : base(x, y, width, height)
+    {
+        this.speed = speed;
+    }
+
+    public void Update()
+    {
+        if (Raylib.IsKeyDown(KeyboardKey.Right)) Rect.X += speed;
+        if (Raylib.IsKeyDown(KeyboardKey.Left)) Rect.X -= speed;
+        if (Raylib.IsKeyDown(KeyboardKey.Up)) Rect.Y -= speed;
+        if (Raylib.IsKeyDown(KeyboardKey.Down)) Rect.Y += speed;
+    }
+
+    public void EnsureInBounds(int screenWidth, int screenHeight)
+    {
+        if (Rect.X < 0) Rect.X = 0;
+        if (Rect.X > screenWidth - Rect.Width) Rect.X = screenWidth - Rect.Width;
+        if (Rect.Y < 0) Rect.Y = 0;
+        if (Rect.Y > screenHeight - Rect.Height) Rect.Y = screenHeight - Rect.Height;
+    }
+
+    public bool CheckCollision(GameObject other)
+    {
+        return Raylib.CheckCollisionRecs(Rect, other.Rect);
+    }
+
+    public void Draw()
+    {
+        Raylib.DrawRectangleRec(Rect, Color.Blue);
+    }
+}
+
+// class for the enemy
+class Enemy : GameObject
+{
+    private int speed;
+    private int originalSpeed;
+
+    public Enemy(float x, float y, float width, float height, int speed) : base(x, y, width, height)
+    {
+        this.speed = speed;
+        this.originalSpeed = speed;
+    }
+
+    public void Update(int screenWidth)
+    {
+        Rect.X += speed;
+        if (Rect.X > screenWidth - Rect.Width || Rect.X < 0)
+        {
+            speed = -speed;
+        }
+    }
+
+    public new void Reset()
+    {
+        base.Reset();
+        speed = originalSpeed;
+    }
+
+    public void Draw()
+    {
+        Raylib.DrawRectangleRec(Rect, Color.Red);
+    }
+}
+
+// class for the goal
+class Goal : GameObject
+{
+    static Random random = new Random();
+
+    public Goal(float x, float y, float width, float height) : base(x, y, width, height)
+    {
+    }
+
+    public void Respawn(Player player, int screenWidth, int screenHeight)
+    {
+        do
+        {
+            Rect.X = random.Next(0, screenWidth - (int)Rect.Width);
+            Rect.Y = random.Next(0, screenHeight - (int)Rect.Height);
+        } while (Math.Abs(Rect.X - player.Rect.X) < 200 && Math.Abs(Rect.Y - player.Rect.Y) < 200);
+
+        Rect.Width = random.Next(20, 100);
+        Rect.Height = random.Next(20, 100);
+    }
+
+    public void Draw()
+    {
+        Raylib.DrawRectangleRec(Rect, Color.Gold);
     }
 }
