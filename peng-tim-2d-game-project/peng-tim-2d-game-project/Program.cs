@@ -196,10 +196,10 @@ class Enemy : GameObject
 
     public Enemy(float x, float y, float width, float height, int speedX, int speedY) : base(x, y, width, height)
     {
-        this.speedX = speedX;
-        this.speedY = speedY;
-        this.originalSpeedX = speedX;
-        this.originalSpeedY = speedY;
+        speedX = speedX;
+        speedY = speedY;
+        originalSpeedX = speedX;
+        originalSpeedY = speedY;
     }
 
     public void Update(int screenWidth, int screenHeight)
