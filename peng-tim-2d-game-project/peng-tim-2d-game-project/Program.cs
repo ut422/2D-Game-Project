@@ -9,7 +9,12 @@ class Program
 
     // game state
     static bool gameLost = false;
+    static bool gameWon = false;
     static bool spacePressed = false;
+
+    static int points = 0;
+    static int targetPoints = 0;
+    static Random random = new Random();
 
     static Player player = new Player(50, 50, 50, 50, 5);
     static Enemy enemy = new Enemy(300, 300, 50, 50, 9);
@@ -20,6 +25,8 @@ class Program
         // initialization
         Raylib.InitWindow(screenWidth, screenHeight, "Simple 2D Game");
         Raylib.SetTargetFPS(60);
+
+        ResetGame();
 
         // game loop
         while (!Raylib.WindowShouldClose())
@@ -35,9 +42,23 @@ class Program
         Raylib.CloseWindow();
     }
 
+    static void ResetGame()
+    {
+        // reset points
+        points = 0;
+
+        // randomize target points between 5 and 30
+        targetPoints = random.Next(5, 30);
+
+        // reset player, enemy, and goal positions
+        player.Reset();
+        enemy.Reset();
+        goal.Reset();
+    }
+
     static void UpdateGame()
     {
-        if (!gameLost)
+        if (!gameLost && !gameWon)
         {
             // update player
             player.Update();
@@ -57,6 +78,15 @@ class Program
             {
                 // move goal to a new random position and change shape, ensuring it spawns far away from the player
                 goal.Respawn(player, screenWidth, screenHeight);
+
+                // increase points
+                points++;
+            }
+
+            // check if player has reached target points
+            if (points >= targetPoints)
+            {
+                gameWon = true;
             }
         }
         else
@@ -66,12 +96,10 @@ class Program
             {
                 // reset game state
                 gameLost = false;
+                gameWon = false;
                 spacePressed = true;
 
-                // reset player, enemy, and goal positions
-                player.Reset();
-                enemy.Reset();
-                goal.Reset();
+                ResetGame();
             }
         }
     }
@@ -81,16 +109,22 @@ class Program
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.Black);
 
-        // you died
         if (gameLost)
         {
-            Raylib.DrawText("you died! press SPACE to continue.", screenWidth / 2 - 150, screenHeight / 2, 20, Color.Red);
+            Raylib.DrawText("You died! Press SPACE to continue.", screenWidth / 2 - 150, screenHeight / 2, 20, Color.Red);
+        }
+        else if (gameWon)
+        {
+            Raylib.DrawText("You win! Press SPACE to play again.", screenWidth / 2 - 150, screenHeight / 2, 20, Color.Green);
         }
         else
         {
             player.Draw();
             enemy.Draw();
             goal.Draw();
+
+            // draw points
+            Raylib.DrawText($"Points: {points}/{targetPoints}", 10, 10, 20, Color.White);
         }
 
         Raylib.EndDrawing();
